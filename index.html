@@ -67,15 +67,17 @@
          const updateShortenedUrlDisplay = (shortUrl) => {
            const shortenedUrlDiv = document.getElementById("shortenedUrl");
            const shortUrlLink = document.getElementById("shortUrlLink");
-                         shortenedUrlDiv.style.display = 'block';
+            shortenedUrlDiv.style.display = 'block';
               shortUrlLink.href = shortUrl;
             shortUrlLink.innerText = shortUrl;
            shortenedUrlDiv.classList.remove('is-hidden');
 
        };
+
        const displayError = (message) => {
               document.getElementById('err').innerHTML = message;
        };
+
         const shortenUrl = () => {
             const longUrl = getUrl();
             if (!longUrl) {
@@ -90,36 +92,37 @@
             updateShortenedUrlDisplay(shortUrl);
         };
 
+
         const handleRedirect = () => {
             const urlParams = new URLSearchParams(window.location.search);
             const longUrlFromParams = urlParams.get('url');
 
-            if (longUrlFromParams) {
+           if (longUrlFromParams) {
                 const shortCode = generateShortCode();
                 localStorage.setItem(shortCode, longUrlFromParams);
                 const shortUrl = window.location.origin + window.location.pathname + "#" + shortCode;
                 const jsonResponse = { shortUrl: shortUrl };
-                document.body.innerHTML = `<pre>${JSON.stringify(jsonResponse, null, 2)}</pre>`;
-                return;
+               document.body.innerHTML = `<pre>${JSON.stringify(jsonResponse, null, 2)}</pre>`;
+
+              return;
             }
 
             const hash = window.location.hash.substring(1);
             if (hash) {
                 const longUrl = localStorage.getItem(hash);
                 if (longUrl) {
-                    window.location.replace(longUrl);
+                      window.location.replace(longUrl);
                 } else {
                       document.getElementById("shortenedUrl").style.display = 'block';
                       document.getElementById("shortenedUrl").innerHTML =  "URL Not found.";
                    }
             }
-        };
-
+         };
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById("shortenButton").addEventListener("click", shortenUrl);
-            handleRedirect();
-        });
+             handleRedirect();
+         });
     </script>
 </body>
 </html>
