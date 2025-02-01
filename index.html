@@ -7,155 +7,119 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <style>
         body { padding: 20px; }
+        #shortenedUrl { margin-top: 1em; }
+        #err {margin-top: 0.5em;}
     </style>
 </head>
 <body>
     <section class="section">
         <div class="container">
-            <h1 class="title">URL Shortener</h1>
+            <h1 class="title has-text-centered">URL Shortener</h1>
 
             <div class="field">
                 <label class="label">Long URL:</label>
                 <div class="control">
-                    <input id="urlinput" class="input" type="text" placeholder="Enter URL to shorten">
+                    <input id="urlInput" class="input" type="text" placeholder="Enter URL to shorten">
                 </div>
             </div>
 
             <div class="field">
                 <div class="control">
-                    <button id="shortenButton" class="button is-primary">Shorten</button>
-                </div>
-            </div>
-            <div class="field">
-                <div class="control">
-                    <p id="shortenedUrl" style="display: none;">Shortened URL: <a id="shortUrlLink" target="_blank"></a></p>
-                </div>
-            </div>
-            
-            <hr>
-              <h2 class="subtitle">Delete Short URL</h2>
-            <div class="field">
-                <label class="label">Short URL Code:</label>
-                <div class="control">
-                     <input id="shortinput" class="input" type="text" placeholder="Enter Short URL Code">
-                </div>
-            </div>
-             <div class="field">
-                <label class="label">Long URL:</label>
-                <div class="control">
-                    <input id="delinput" class="input" type="text" placeholder="Enter Full URL">
+                    <button id="shortenButton" class="button is-primary is-fullwidth">Shorten</button>
                 </div>
             </div>
 
-            <div class="field">
-                <div class="control">
-                    <button id="deleteButton" class="button is-danger">Delete</button>
-                </div>
+            <div id="shortenedUrl" class="notification is-success" style="display: none;">
+              Shortened URL: <a id="shortUrlLink" target="_blank"></a>
             </div>
-              <p id="err" class="help is-danger"></p>
-            <div class="field">
-                 <div class="control">
-                   <div id='buttons'></div>
-                 </div>
-             </div>
+             <p id="err" class="help is-danger"></p>
+
         </div>
     </section>
 
     <script>
-        function getUrl() {
-            var url = document.getElementById("urlinput").value;
+        const getUrl = () => {
+            const urlInput = document.getElementById("urlInput");
+            if (!urlInput) return null;
+            let url = urlInput.value.trim();
             if (!url) return null;
-            var protocol_ok = url.startsWith("http://") || url.startsWith("https://") || url.startsWith("ftp://");
-            return protocol_ok ? url : "http://" + url;
-        }
-        function getDelUrl() {
-             var url = document.getElementById("delinput").value;
-             if (!url) return null;
-            var protocol_ok = url.startsWith("http://") || url.startsWith("https://") || url.startsWith("ftp://");
-            return protocol_ok ? url : "http://" + url;
-        }
+            const protocolOk = url.startsWith("http://") || url.startsWith("https://") || url.startsWith("ftp://");
+            return protocolOk ? url : "http://" + url;
+        };
 
-        function getRandom() {
-            var text = "";
-            var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            for (var i = 0; i < 5; i++) {
+        const getRandom = () => {
+            let text = "";
+            const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            for (let i = 0; i < 5; i++) {
                 text += possible.charAt(Math.floor(Math.random() * possible.length));
             }
             return text;
-        }
+        };
 
-         function generateShortCode() {
-           let shortCode;
-             do {
-             shortCode = getRandom();
-             } while (localStorage.getItem(shortCode)); 
-           return shortCode;
-          }
+        const generateShortCode = () => {
+            let shortCode;
+            do {
+                shortCode = getRandom();
+            } while (localStorage.getItem(shortCode));
+            return shortCode;
+        };
 
+         const updateShortenedUrlDisplay = (shortUrl) => {
+           const shortenedUrlDiv = document.getElementById("shortenedUrl");
+           const shortUrlLink = document.getElementById("shortUrlLink");
+                         shortenedUrlDiv.style.display = 'block';
+              shortUrlLink.href = shortUrl;
+            shortUrlLink.innerText = shortUrl;
+           shortenedUrlDiv.classList.remove('is-hidden');
 
-        function shortenUrl() {
-            var longUrl = getUrl();
-             if (!longUrl) {
-                 alert("Please enter a valid URL.");
-                  return;
-              }
+       };
+       const displayError = (message) => {
+              document.getElementById('err').innerHTML = message;
+       };
+        const shortenUrl = () => {
+            const longUrl = getUrl();
+            if (!longUrl) {
+                displayError("Please enter a valid URL.");
+                return;
+            }
+           displayError("");
 
-             var shortCode = generateShortCode();
-             localStorage.setItem(shortCode, longUrl);
-             var shortUrl = window.location.origin + window.location.pathname + "#" + shortCode;
-              document.getElementById('shortenedUrl').style.display = 'block';
-            document.getElementById('shortUrlLink').href = shortUrl;
-            document.getElementById('shortUrlLink').innerText = shortUrl;
-          
-        }
-           function deleteUrl() {
-            var longUrl = getDelUrl();
-               var shortCode = document.getElementById('shortinput').value;
-             if(!longUrl || !shortCode) {
-                   document.getElementById('err').innerHTML = "Please fill all the fields!";
-                   return;
-                }
-            if (localStorage.getItem(shortCode) === longUrl) {
-                localStorage.removeItem(shortCode);
-                document.getElementById('buttons').innerHTML = 'DELETED!!!';
-                document.getElementById('buttons').className = 'button is-danger';
-                 document.getElementById('err').innerHTML = 'URL Deleted!';
-            } else {
-                document.getElementById('err').innerHTML = "ERROR! Short code and URL does not match!!!";
+            const shortCode = generateShortCode();
+            localStorage.setItem(shortCode, longUrl);
+            const shortUrl = window.location.origin + window.location.pathname + "#" + shortCode;
+            updateShortenedUrlDisplay(shortUrl);
+        };
+
+        const handleRedirect = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const longUrlFromParams = urlParams.get('url');
+
+            if (longUrlFromParams) {
+                const shortCode = generateShortCode();
+                localStorage.setItem(shortCode, longUrlFromParams);
+                const shortUrl = window.location.origin + window.location.pathname + "#" + shortCode;
+                const jsonResponse = { shortUrl: shortUrl };
+                document.body.innerHTML = `<pre>${JSON.stringify(jsonResponse, null, 2)}</pre>`;
+                return;
             }
 
-        }
-
-        function handleRedirect() {
-          const urlParams = new URLSearchParams(window.location.search);
-          const longUrlFromParams = urlParams.get('url');
-
-
-          if (longUrlFromParams) {
-          var shortCode = generateShortCode();
-          localStorage.setItem(shortCode, longUrlFromParams);
-         var shortUrl = window.location.origin + window.location.pathname + "#" + shortCode;
-          const jsonResponse = { shortUrl: shortUrl };
-           document.body.innerText = JSON.stringify(jsonResponse, null, 2);
-              return;
-         }
-             var hash = window.location.hash.substring(1);
-              if (hash) {
-               var longUrl = localStorage.getItem(hash);
-                 if (longUrl) {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                const longUrl = localStorage.getItem(hash);
+                if (longUrl) {
                     window.location.replace(longUrl);
-                   } else {
-                        document.getElementById("shortenedUrl").innerText = "URL Not found.";
-                    }
-                }
-           }
+                } else {
+                      document.getElementById("shortenedUrl").style.display = 'block';
+                      document.getElementById("shortenedUrl").innerHTML =  "URL Not found.";
+                   }
+            }
+        };
 
 
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', () => {
             document.getElementById("shortenButton").addEventListener("click", shortenUrl);
-            document.getElementById("deleteButton").addEventListener("click", deleteUrl);
-              handleRedirect();
-         });
+            handleRedirect();
+        });
     </script>
 </body>
 </html>
