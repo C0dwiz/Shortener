@@ -1,47 +1,149 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>Url Shortener</title>
-        <meta charset="utf-8">
-        <link rel="icon" href="https://cdn0.iconfinder.com/data/icons/entypo/80/link5-512.png">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
-        <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
-        <script src="https://code.jquery.com/jquery-3.4.0.min.js" integrity="sha256-BJeo0qm959uMBGb65z40ejJYGSgR7REI4+CW1fNKwOg=" crossorigin="anonymous"></script>
-        <script src="short.js"></script>
-    </head>
-    <body>
-        <div class="hero is-fullheight is-link">
-            <div class="hero-body">
-                <div class="container has-text-center">
-                    <h1 class="title">URL Shortener</h1>
-                    <p class="subtitle">How to use:</p>
-                    <p>TO use this, first visit the link to the link you need to shorten</p>
-                    <p>Example:</p>
-                    <code>https://codwiz.life/#example</code>
-                    <br><br>
-                    <p>Then enter the URL you need, and <a class="text" href="delete.html">BAM!!!</a> Next time you go there, it will send you to that URL! (if you do not put visit the url then input the code, then a random one will be generated that you can copy from the address bar!)</p>
-                    <div class="field">
-                        <p class="control has-icons-left">
-                                <input class="input" placeholder="Enter an URL" type="text" id="urlinput">
-                            <span class="icon is-small is-left">
-                            <i class="fas fa-link"></i>
-                            </span>
-                        </p>
-                    </div>
-                    <a id="buttons" class="button is-warning" onclick="shorturl()">
-                        <span class="icon">
-                            <i class="fas fa-check"></i>
-                        </span>
-                        <span>Shorten URL!</span>
-                    </a>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <style>
+        body { padding: 20px; }
+    </style>
+</head>
+<body>
+    <section class="section">
+        <div class="container">
+            <h1 class="title">URL Shortener</h1>
+
+            <div class="field">
+                <label class="label">Long URL:</label>
+                <div class="control">
+                    <input id="urlinput" class="input" type="text" placeholder="Enter URL to shorten">
                 </div>
             </div>
+
+            <div class="field">
+                <div class="control">
+                    <button id="shortenButton" class="button is-primary">Shorten</button>
+                </div>
+            </div>
+            <div class="field">
+                <div class="control">
+                    <p id="shortenedUrl" style="display: none;">Shortened URL: <a id="shortUrlLink" target="_blank"></a></p>
+                </div>
+            </div>
+            
+            <hr>
+              <h2 class="subtitle">Delete Short URL</h2>
+            <div class="field">
+                <label class="label">Short URL Code:</label>
+                <div class="control">
+                     <input id="shortinput" class="input" type="text" placeholder="Enter Short URL Code">
+                </div>
+            </div>
+             <div class="field">
+                <label class="label">Long URL:</label>
+                <div class="control">
+                    <input id="delinput" class="input" type="text" placeholder="Enter Full URL">
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="control">
+                    <button id="deleteButton" class="button is-danger">Delete</button>
+                </div>
+            </div>
+              <p id="err" class="help is-danger"></p>
+            <div class="field">
+                 <div class="control">
+                   <div id='buttons'></div>
+                 </div>
+             </div>
         </div>
-        <style>
-            .text {
-                cursor: text;
+    </section>
+
+    <script>
+        function getUrl() {
+            var url = document.getElementById("urlinput").value;
+            if (!url) return null; // Return null if input is empty
+            var protocol_ok = url.startsWith("http://") || url.startsWith("https://") || url.startsWith("ftp://");
+            return protocol_ok ? url : "http://" + url; // Add http if no protocol
+        }
+        function getDelUrl() {
+             var url = document.getElementById("delinput").value;
+             if (!url) return null; // Return null if input is empty
+            var protocol_ok = url.startsWith("http://") || url.startsWith("https://") || url.startsWith("ftp://");
+            return protocol_ok ? url : "http://" + url; // Add http if no protocol
+        }
+
+        function getRandom() {
+            var text = "";
+            var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            for (var i = 0; i < 5; i++) {
+                text += possible.charAt(Math.floor(Math.random() * possible.length));
             }
-        </style>
-    </body>
+            return text;
+        }
+
+         function generateShortCode() {
+           let shortCode;
+             do {
+             shortCode = getRandom();
+             } while (localStorage.getItem(shortCode)); 
+           return shortCode;
+          }
+
+
+        function shortenUrl() {
+            var longUrl = getUrl();
+             if (!longUrl) {
+                 alert("Please enter a valid URL.");
+                  return;
+              }
+
+             var shortCode = generateShortCode();
+             localStorage.setItem(shortCode, longUrl);
+             var shortUrl = window.location.origin + window.location.pathname + "#" + shortCode;
+              document.getElementById('shortenedUrl').style.display = 'block';
+            document.getElementById('shortUrlLink').href = shortUrl;
+            document.getElementById('shortUrlLink').innerText = shortUrl;
+          
+        }
+           function deleteUrl() {
+            var longUrl = getDelUrl();
+               var shortCode = document.getElementById('shortinput').value;
+             if(!longUrl || !shortCode) {
+                   document.getElementById('err').innerHTML = "Please fill all the fields!";
+                   return;
+                }
+            if (localStorage.getItem(shortCode) === longUrl) {
+                localStorage.removeItem(shortCode);
+                document.getElementById('buttons').innerHTML = 'DELETED!!!';
+                document.getElementById('buttons').className = 'button is-danger';
+                 document.getElementById('err').innerHTML = 'URL Deleted!';
+            } else {
+                document.getElementById('err').innerHTML = "ERROR! Short code and URL does not match!!!";
+            }
+
+        }
+
+        function handleRedirect() {
+             var hash = window.location.hash.substring(1);
+              if (hash) {
+               var longUrl = localStorage.getItem(hash);
+                 if (longUrl) {
+                    window.location.replace(longUrl);
+                   } else {
+                        document.getElementById("shortenedUrl").innerText = "URL Not found.";
+                    }
+                }
+           }
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById("shortenButton").addEventListener("click", shortenUrl);
+            document.getElementById("deleteButton").addEventListener("click", deleteUrl);
+              handleRedirect();
+         });
+    </script>
+</body>
 </html>
