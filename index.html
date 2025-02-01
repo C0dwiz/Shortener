@@ -64,15 +64,15 @@
     <script>
         function getUrl() {
             var url = document.getElementById("urlinput").value;
-            if (!url) return null; // Return null if input is empty
+            if (!url) return null;
             var protocol_ok = url.startsWith("http://") || url.startsWith("https://") || url.startsWith("ftp://");
-            return protocol_ok ? url : "http://" + url; // Add http if no protocol
+            return protocol_ok ? url : "http://" + url;
         }
         function getDelUrl() {
              var url = document.getElementById("delinput").value;
-             if (!url) return null; // Return null if input is empty
+             if (!url) return null;
             var protocol_ok = url.startsWith("http://") || url.startsWith("https://") || url.startsWith("ftp://");
-            return protocol_ok ? url : "http://" + url; // Add http if no protocol
+            return protocol_ok ? url : "http://" + url;
         }
 
         function getRandom() {
@@ -127,6 +127,18 @@
         }
 
         function handleRedirect() {
+          const urlParams = new URLSearchParams(window.location.search);
+          const longUrlFromParams = urlParams.get('url');
+
+
+          if (longUrlFromParams) {
+          var shortCode = generateShortCode();
+          localStorage.setItem(shortCode, longUrlFromParams);
+         var shortUrl = window.location.origin + window.location.pathname + "#" + shortCode;
+          const jsonResponse = { shortUrl: shortUrl };
+           document.body.innerText = JSON.stringify(jsonResponse, null, 2);
+              return;
+         }
              var hash = window.location.hash.substring(1);
               if (hash) {
                var longUrl = localStorage.getItem(hash);
