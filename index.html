@@ -5,15 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>URL Shortener</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-    <style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+     <style>
         body { padding: 20px; }
         #shortenedUrl { margin-top: 1em; }
-        #err {margin-top: 0.5em;}
-    </style>
+         .shortener-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+         .modal-card-body { padding: 1.5rem;}
+         .is-hidden {display: none;}
+         #err {margin-top: 0.5em;}
+     </style>
 </head>
 <body>
     <section class="section">
-        <div class="container">
+        <div class="container shortener-container">
             <h1 class="title has-text-centered">URL Shortener</h1>
 
             <div class="field">
@@ -29,13 +37,24 @@
                 </div>
             </div>
 
-            <div id="shortenedUrl" class="notification is-success" style="display: none;">
-              Shortened URL: <a id="shortUrlLink" target="_blank"></a>
-            </div>
-             <p id="err" class="help is-danger"></p>
+          <p id="err" class="help is-danger"></p>
 
+           <div id="shortUrlModal" class="modal">
+                <div class="modal-background"></div>
+                <div class="modal-card">
+                    <header class="modal-card-head">
+                        <p class="modal-card-title">Shortened URL</p>
+                        <button class="delete" aria-label="close"></button>
+                    </header>
+                    <section class="modal-card-body has-text-centered">
+                        <p id="modalShortUrl"></p>
+                        <button id="copyButton" class="button is-info is-small"><i class="fas fa-copy"></i> Copy</button>
+                    </section>
+                  </div>
+              </div>
         </div>
     </section>
+
 
     <script>
         const getUrl = () => {
@@ -64,14 +83,35 @@
             return shortCode;
         };
 
-         const updateShortenedUrlDisplay = (shortUrl) => {
-           const shortenedUrlDiv = document.getElementById("shortenedUrl");
-           const shortUrlLink = document.getElementById("shortUrlLink");
-            shortenedUrlDiv.style.display = 'block';
-              shortUrlLink.href = shortUrl;
-            shortUrlLink.innerText = shortUrl;
-           shortenedUrlDiv.classList.remove('is-hidden');
+       const displayModal = (shortUrl) => {
+           const modal = document.getElementById('shortUrlModal');
+           const modalShortUrl = document.getElementById('modalShortUrl');
+            modalShortUrl.innerHTML = `<a href="${shortUrl}" target="_blank">${shortUrl}</a>`;
+           modal.classList.add('is-active');
 
+
+            const closeModalButton = modal.querySelector('.delete');
+            closeModalButton.addEventListener('click', () => {
+                 modal.classList.remove('is-active');
+             });
+
+        const copyButton = document.getElementById('copyButton');
+        copyButton.addEventListener('click', () => {
+        navigator.clipboard.writeText(shortUrl)
+                .then(() => {
+                    copyButton.innerHTML = `<i class="fas fa-check"></i> Copied!`;
+                    setTimeout(() => {
+                            copyButton.innerHTML = `<i class="fas fa-copy"></i> Copy`;
+                      }, 1500);
+                    })
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                     copyButton.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Failed to copy`;
+                  setTimeout(() => {
+                            copyButton.innerHTML = `<i class="fas fa-copy"></i> Copy`;
+                      }, 1500);
+                });
+            });
        };
 
        const displayError = (message) => {
@@ -82,46 +122,31 @@
             const longUrl = getUrl();
             if (!longUrl) {
                 displayError("Please enter a valid URL.");
-                return;
-            }
-           displayError("");
+               return;
+             }
 
+              displayError("");
             const shortCode = generateShortCode();
             localStorage.setItem(shortCode, longUrl);
             const shortUrl = window.location.origin + window.location.pathname + "#" + shortCode;
-            updateShortenedUrlDisplay(shortUrl);
+           displayModal(shortUrl);
         };
 
-
         const handleRedirect = () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const longUrlFromParams = urlParams.get('url');
-
-           if (longUrlFromParams) {
-                const shortCode = generateShortCode();
-                localStorage.setItem(shortCode, longUrlFromParams);
-                const shortUrl = window.location.origin + window.location.pathname + "#" + shortCode;
-                const jsonResponse = { shortUrl: shortUrl };
-               document.body.innerHTML = `<pre>${JSON.stringify(jsonResponse, null, 2)}</pre>`;
-
-              return;
-            }
-
-            const hash = window.location.hash.substring(1);
-            if (hash) {
+           const hash = window.location.hash.substring(1);
+             if (hash) {
                 const longUrl = localStorage.getItem(hash);
-                if (longUrl) {
-                      window.location.replace(longUrl);
-                } else {
-                      document.getElementById("shortenedUrl").style.display = 'block';
-                      document.getElementById("shortenedUrl").innerHTML =  "URL Not found.";
-                   }
+                 if (longUrl) {
+                   window.location.replace(longUrl);
+                  } else {
+                    displayError("URL Not found.");
+                 }
             }
-         };
+        };
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById("shortenButton").addEventListener("click", shortenUrl);
-             handleRedirect();
+            handleRedirect();
          });
     </script>
 </body>
