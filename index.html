@@ -5,86 +5,81 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>URL Shortener</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { padding: 20px; }
-        .shortener-container {
-            max-width: 700px;
-            margin: 0 auto;
-        }
-          .modal-card-body { padding: 1.5rem;}
-        .is-hidden {display: none;}
-         #err {margin-top: 0.5em; text-align: center;}
-         .shortener-container h1 {
-            margin-bottom: 1.5rem;
-        }
-         .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-            margin-left: 0.5em;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        #historyTable { margin-top: 1em;}
-         .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5em; }
+                .shortener-container {
+           max-width: 700px;
+           margin: 0 auto;
+                }
+        #err { margin-top: 10px; text-align: center; }
+                .loader {
+           border: 4px solid #f3f3f3;
+           border-top: 4px solid #3498db;
+           border-radius: 50%;
+           width: 20px;
+           height: 20px;
+           animation: spin 1s linear infinite;
+           display: inline-block;
+           margin-left: 0.5em;
+                }
+                @keyframes spin {
+           0% { transform: rotate(0deg); }
+           100% { transform: rotate(360deg); }
+                }
+                #historyTable { margin-top: 1em; }
+                .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5em; }
+                .modal-dialog {
+          max-width: 400px;
+         margin: 1.75rem auto;
+                }
     </style>
 </head>
 
 <body>
-    <section class="section">
-        <div class="container shortener-container">
-            <h1 class="title has-text-centered">URL Shortener</h1>
-            <div class="tabs is-centered">
-                <ul>
-                    <li id="shortenTab" class="is-active">
-                        <a><i class="fas fa-link"></i> Shorten URL</a>
-                    </li>
-                    <li id="historyTab">
-                        <a><i class="fas fa-history"></i> History</a>
-                    </li>
-                </ul>
-            </div>
+    <section class="container">
+        <div class="shortener-container">
+            <h1 class="text-center mb-4">URL Shortener</h1>
+            <ul class="nav nav-tabs justify-content-center">
+                <li class="nav-item">
+                    <a class="nav-link active" id="shortenTab" href="#">
+                        <i class="fas fa-link"></i> Shorten URL
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="historyTab" href="#">
+                        <i class="fas fa-history"></i> History
+                    </a>
+                </li>
+            </ul>
 
             <div id="shortenSection">
-                <div class="field">
-                    <label class="label">Long URL:</label>
-                    <div class="control has-icons-left">
-                        <input id="urlInput" class="input" type="text" placeholder="Enter URL to shorten">
-                        <span class="icon is-left">
-                            <i class="fas fa-link"></i>
-                        </span>
+                <div class="form-group">
+                    <label for="urlInput">Long URL:</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-link"></i></span>
+                        </div>
+                        <input type="text" class="form-control" id="urlInput" placeholder="Enter URL to shorten">
                     </div>
                 </div>
-                <div class="field">
 
-                    <div class="control">
-                        <button id="shortenButton" class="button is-primary is-fullwidth is-medium">
-                            <span class="icon"><i class="fas fa-cut"></i></span>
-                            <span>Shorten</span>
-                            <span id="loading" class="loader is-hidden"></span>
-                        </button>
-                    </div>
-                </div>
-                <p id="err" class="help is-danger"></p>
+                <button id="shortenButton" class="btn btn-primary btn-block">
+                    <i class="fas fa-cut"></i> Shorten
+                    <span id="loading" class="loader d-none"></span>
+                </button>
+                <p id="err" class="text-danger"></p>
             </div>
 
-
-            <div id="historySection" class="is-hidden">
+            <div id="historySection" class="d-none">
                 <div class="history-header">
                     <h2 class="subtitle">History of shortened URLs</h2>
-                    <button id="clearHistory" class="button is-danger is-small">
+                    <button id="clearHistory" class="btn btn-danger btn-sm">
                         <i class="fas fa-trash"></i> Clear
                     </button>
                 </div>
-                <table id="historyTable" class="table is-bordered is-striped is-fullwidth">
+                <table id="historyTable" class="table table-bordered table-striped">
                     <thead>
                         <tr>
                             <th>Original URL</th>
@@ -96,176 +91,177 @@
                 </table>
             </div>
 
-            <div id="shortUrlModal" class="modal">
-                <div class="modal-background"></div>
-                <div class="modal-card">
-                    <header class="modal-card-head">
-                        <p class="modal-card-title">Shortened URL</p>
-                        <button class="delete" aria-label="close"></button>
-                    </header>
-                    <section class="modal-card-body has-text-centered">
-                        <p id="modalShortUrl"></p>
-                        <button id="copyButton" class="button is-info is-small">
-                            <span class="icon"><i class="fas fa-copy"></i></span>
-                            <span>Copy</span>
-                        </button>
-                    </section>
+
+            <div class="modal fade" id="shortUrlModal" tabindex="-1" role="dialog">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Shortened URL</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <p id="modalShortUrl"></p>
+                            <button id="copyButton" class="btn btn-info btn-sm">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
     <script>
         const urlRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
+
         const getUrl = () => {
             const urlInput = document.getElementById("urlInput");
             if (!urlInput) return null;
             let url = urlInput.value.trim();
-             if (!url) return null;
-              if (!urlRegex.test(url)){
-                 return null;
-             }
-           return url;
+            if (!url) return null;
+            if (!urlRegex.test(url)) {
+                return null;
+            }
+            return url;
         };
-        
+
         const getRandom = () => {
             let text = "";
             const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 9; i++) {
                 text += possible.charAt(Math.floor(Math.random() * possible.length));
             }
             return text;
         };
-        
+
         const generateShortCode = () => {
-           let shortCode;
+            let shortCode;
             do {
-               shortCode = getRandom();
+                shortCode = getRandom();
             } while (localStorage.getItem(shortCode));
             return shortCode;
         };
-          const toggleLoading = (isLoading) => {
-           const loadingIndicator = document.getElementById('loading');
-           loadingIndicator.classList.toggle('is-hidden', !isLoading);
+
+        const toggleLoading = (isLoading) => {
+            const loadingIndicator = document.getElementById('loading');
+            loadingIndicator.classList.toggle('d-none', !isLoading);
         };
-        
+
         const displayModal = (shortUrl) => {
-            const modal = document.getElementById('shortUrlModal');
+            const modal = $('#shortUrlModal');
             const modalShortUrl = document.getElementById('modalShortUrl');
             modalShortUrl.innerHTML = `<a href="${shortUrl}" target="_blank">${shortUrl}</a>`;
-            modal.classList.add('is-active');
-             const closeModalButton = modal.querySelector('.delete');
-        
-        closeModalButton.addEventListener('click', () => {
-                modal.classList.remove('is-active');
-            });
-        
+            modal.modal('show');
+
             const copyButton = document.getElementById('copyButton');
             copyButton.addEventListener('click', () => {
                 navigator.clipboard.writeText(shortUrl)
-                     .then(() => {
-                         copyButton.innerHTML = `<span class="icon"><i class="fas fa-check"></i></span> <span>Copied!</span>`;
+                    .then(() => {
+                        copyButton.innerHTML = `<i class="fas fa-check"></i> Copied!`;
                         setTimeout(() => {
-                             copyButton.innerHTML = `<span class="icon"><i class="fas fa-copy"></i></span> <span>Copy</span>`;
-                            }, 1500);
-                        })
+                            copyButton.innerHTML = `<i class="fas fa-copy"></i> Copy`;
+                        }, 1500);
+                    })
                     .catch(err => {
                         console.error('Failed to copy: ', err);
-                         copyButton.innerHTML = `<span class="icon"><i class="fas fa-exclamation-triangle"></i></span> <span>Failed to copy</span>`;
-                         setTimeout(() => {
-                             copyButton.innerHTML = `<span class="icon"><i class="fas fa-copy"></i></span> <span>Copy</span>`;
-                           }, 1500);
+                        copyButton.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Failed to copy`;
+                        setTimeout(() => {
+                            copyButton.innerHTML = `<i class="fas fa-copy"></i> Copy`;
+                        }, 1500);
                     });
             });
         };
-        
-        
-              const displayError = (message) => {
-            document.getElementById('err').innerHTML = message;
-              };
-              const updateHistoryTable = () => {
-        const historyTableBody = document.querySelector('#historyTable tbody');
-        historyTableBody.innerHTML = "";
-        for (let i = 0; i < localStorage.length; i++){
-           const shortCode = localStorage.key(i);
-           const longUrl = localStorage.getItem(shortCode);
-         if(shortCode.startsWith('http')) continue;
-          const shortUrl = window.location.origin + window.location.pathname + "#" + shortCode;
-          const row = historyTableBody.insertRow();
-          const longUrlCell = row.insertCell();
-         const shortUrlCell = row.insertCell();
-           longUrlCell.innerHTML = `<a href="${longUrl}" target="_blank">${longUrl}</a>`;
-           shortUrlCell.innerHTML = `<a href="${shortUrl}" target="_blank">${shortUrl}</a>`;
-        }
-              };
-         const shortenUrl = async () => {
+        const displayError = (message) => {
+            document.getElementById('err').textContent = message;
+        };
+
+        const updateHistoryTable = () => {
+            const historyTableBody = document.querySelector('#historyTable tbody');
+            historyTableBody.innerHTML = "";
+            for (let i = 0; i < localStorage.length; i++) {
+                const shortCode = localStorage.key(i);
+                const longUrl = localStorage.getItem(shortCode);
+                if (shortCode.startsWith('http')) continue;
+                const shortUrl = window.location.origin + window.location.pathname + "#" + shortCode;
+                const row = historyTableBody.insertRow();
+                const longUrlCell = row.insertCell();
+                const shortUrlCell = row.insertCell();
+                longUrlCell.innerHTML = `<a href="${longUrl}" target="_blank">${longUrl}</a>`;
+                shortUrlCell.innerHTML = `<a href="${shortUrl}" target="_blank">${shortUrl}</a>`;
+            }
+        };
+        const shortenUrl = async () => {
             const longUrl = getUrl();
             if (!longUrl) {
-               displayError("Please enter a valid URL.");
-                 return;
-              }
-              displayError("");
-             toggleLoading(true);
+                displayError("Please enter a valid URL.");
+                return;
+            }
+            displayError("");
+            toggleLoading(true);
             const shortCode = generateShortCode();
-             localStorage.setItem(shortCode, longUrl);
+            localStorage.setItem(shortCode, longUrl);
             const shortUrl = window.location.origin + window.location.pathname + "#" + shortCode;
             displayModal(shortUrl);
             toggleLoading(false);
-             updateHistoryTable();
+            updateHistoryTable();
         };
-        
+
         const handleRedirect = () => {
-             const hash = window.location.hash.substring(1);
-             if (hash) {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
                 const longUrl = localStorage.getItem(hash);
-                  if (longUrl) {
-                       window.location.replace(longUrl);
-                    } else {
-                     displayError("URL Not found.");
-                     }
-              }
-         };
+                if (longUrl) {
+                    window.location.replace(longUrl);
+                } else {
+                    displayError("URL Not found.");
+                }
+            }
+        };
+
         const clearHistory = () => {
-            for (let i = 0; i < localStorage.length; i++){
-               const shortCode = localStorage.key(i);
-                if(shortCode.startsWith('http')) continue;
+            for (let i = 0; i < localStorage.length; i++) {
+                const shortCode = localStorage.key(i);
+                if (shortCode.startsWith('http')) continue;
                 localStorage.removeItem(shortCode);
-              i--;
-              }
-                updateHistoryTable();
+                i--;
             }
-        
-         const switchTab = (tabId) => {
-            const shortenSection = document.getElementById('shortenSection');
-              const historySection = document.getElementById('historySection');
-             const sh
-        
-        ortenTab = document.getElementById('shortenTab');
-              const historyTab = document.getElementById('historyTab');
-        
-             if (tabId === 'shortenTab') {
-                shortenSection.classList.remove('is-hidden');
-                historySection.classList.add('is-hidden');
-               shortenTab.classList.add('is-active');
-               historyTab.classList.remove('is-active');
-             } else {
-                  shortenSection.classList.add('is-hidden');
-                   historySection.classList.remove('is-hidden');
-                  shortenTab.classList.remove('is-active');
-                  historyTab.classList.add('is-active');
-            }
+            updateHistoryTable();
         }
-        
+
+        const switchTab = (tabId) => {
+            const shortenSection = document.getElementById('shortenSection');
+            const historySection = document.getElementById('historySection');
+            const shortenTab = document.getElementById('shortenTab');
+            const historyTab = document.getElementById('historyTab');
+
+            if (tabId === 'shortenTab') {
+                shortenSection.classList.remove('d-none');
+                historySection.classList.add('d-none');
+                shortenTab.classList.add('active');
+                historyTab.classList.remove('active');
+            } else {
+                shortenSection.classList.add('d-none');
+                historySection.classList.remove('d-none');
+                shortenTab.classList.remove('active');
+                historyTab.classList.add('active');
+            }
+        };
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById("shortenButton").addEventListener("click", shortenUrl);
             document.getElementById('clearHistory').addEventListener('click', clearHistory);
             document.getElementById('shortenTab').addEventListener('click', () => switchTab('shortenTab'));
             document.getElementById('historyTab').addEventListener('click', () => {
-                 switchTab('historyTab');
-                 updateHistoryTable();
+                switchTab('historyTab');
+                updateHistoryTable();
             });
-              handleRedirect();
-         });
+            handleRedirect();
+        });
     </script>
 </body>
 
