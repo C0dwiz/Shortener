@@ -1,45 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>URL Shortener</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-     <style>
+    <style>
         body { padding: 20px; }
-        #shortenedUrl { margin-top: 1em; }
-         .shortener-container {
-            max-width: 600px;
+        .shortener-container {
+            max-width: 700px;
             margin: 0 auto;
         }
-
-         .modal-card-body { padding: 1.5rem;}
-         .is-hidden {display: none;}
-         #err {margin-top: 0.5em;}
-     </style>
+          .modal-card-body { padding: 1.5rem;}
+        .is-hidden {display: none;}
+         #err {margin-top: 0.5em; text-align: center;}
+         .shortener-container h1 {
+            margin-bottom: 1.5rem;
+        }
+         .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 0.5em;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #historyTable { margin-top: 1em;}
+         .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5em; }
+    </style>
 </head>
+
 <body>
     <section class="section">
         <div class="container shortener-container">
             <h1 class="title has-text-centered">URL Shortener</h1>
-
-            <div class="field">
-                <label class="label">Long URL:</label>
-                <div class="control">
-                    <input id="urlInput" class="input" type="text" placeholder="Enter URL to shorten">
-                </div>
+            <div class="tabs is-centered">
+                <ul>
+                    <li id="shortenTab" class="is-active">
+                        <a><i class="fas fa-link"></i> Shorten URL</a>
+                    </li>
+                    <li id="historyTab">
+                        <a><i class="fas fa-history"></i> History</a>
+                    </li>
+                </ul>
             </div>
 
-            <div class="field">
-                <div class="control">
-                    <button id="shortenButton" class="button is-primary is-fullwidth">Shorten</button>
+            <div id="shortenSection">
+                <div class="field">
+                    <label class="label">Long URL:</label>
+                    <div class="control has-icons-left">
+                        <input id="urlInput" class="input" type="text" placeholder="Enter URL to shorten">
+                        <span class="icon is-left">
+                            <i class="fas fa-link"></i>
+                        </span>
+                    </div>
                 </div>
+                <div class="field">
+
+                    <div class="control">
+                        <button id="shortenButton" class="button is-primary is-fullwidth is-medium">
+                            <span class="icon"><i class="fas fa-cut"></i></span>
+                            <span>Shorten</span>
+                            <span id="loading" class="loader is-hidden"></span>
+                        </button>
+                    </div>
+                </div>
+                <p id="err" class="help is-danger"></p>
             </div>
 
-          <p id="err" class="help is-danger"></p>
 
-           <div id="shortUrlModal" class="modal">
+            <div id="historySection" class="is-hidden">
+                <div class="history-header">
+                    <h2 class="subtitle">History of shortened URLs</h2>
+                    <button id="clearHistory" class="button is-danger is-small">
+                        <i class="fas fa-trash"></i> Clear
+                    </button>
+                </div>
+                <table id="historyTable" class="table is-bordered is-striped is-fullwidth">
+                    <thead>
+                        <tr>
+                            <th>Original URL</th>
+                            <th>Shortened URL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="shortUrlModal" class="modal">
                 <div class="modal-background"></div>
                 <div class="modal-card">
                     <header class="modal-card-head">
@@ -48,106 +105,168 @@
                     </header>
                     <section class="modal-card-body has-text-centered">
                         <p id="modalShortUrl"></p>
-                        <button id="copyButton" class="button is-info is-small"><i class="fas fa-copy"></i> Copy</button>
+                        <button id="copyButton" class="button is-info is-small">
+                            <span class="icon"><i class="fas fa-copy"></i></span>
+                            <span>Copy</span>
+                        </button>
                     </section>
-                  </div>
-              </div>
+                </div>
+            </div>
         </div>
     </section>
 
-
     <script>
+        const urlRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
         const getUrl = () => {
             const urlInput = document.getElementById("urlInput");
             if (!urlInput) return null;
             let url = urlInput.value.trim();
-            if (!url) return null;
-            const protocolOk = url.startsWith("http://") || url.startsWith("https://") || url.startsWith("ftp://");
-            return protocolOk ? url : "http://" + url;
+             if (!url) return null;
+              if (!urlRegex.test(url)){
+                 return null;
+             }
+           return url;
         };
-
+        
         const getRandom = () => {
             let text = "";
             const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 8; i++) {
                 text += possible.charAt(Math.floor(Math.random() * possible.length));
             }
             return text;
         };
-
+        
         const generateShortCode = () => {
-            let shortCode;
+           let shortCode;
             do {
-                shortCode = getRandom();
+               shortCode = getRandom();
             } while (localStorage.getItem(shortCode));
             return shortCode;
         };
-
-       const displayModal = (shortUrl) => {
-           const modal = document.getElementById('shortUrlModal');
-           const modalShortUrl = document.getElementById('modalShortUrl');
+          const toggleLoading = (isLoading) => {
+           const loadingIndicator = document.getElementById('loading');
+           loadingIndicator.classList.toggle('is-hidden', !isLoading);
+        };
+        
+        const displayModal = (shortUrl) => {
+            const modal = document.getElementById('shortUrlModal');
+            const modalShortUrl = document.getElementById('modalShortUrl');
             modalShortUrl.innerHTML = `<a href="${shortUrl}" target="_blank">${shortUrl}</a>`;
-           modal.classList.add('is-active');
-
-
-            const closeModalButton = modal.querySelector('.delete');
-            closeModalButton.addEventListener('click', () => {
-                 modal.classList.remove('is-active');
-             });
-
-        const copyButton = document.getElementById('copyButton');
-        copyButton.addEventListener('click', () => {
-        navigator.clipboard.writeText(shortUrl)
-                .then(() => {
-                    copyButton.innerHTML = `<i class="fas fa-check"></i> Copied!`;
-                    setTimeout(() => {
-                            copyButton.innerHTML = `<i class="fas fa-copy"></i> Copy`;
-                      }, 1500);
-                    })
-                .catch(err => {
-                    console.error('Failed to copy: ', err);
-                     copyButton.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Failed to copy`;
-                  setTimeout(() => {
-                            copyButton.innerHTML = `<i class="fas fa-copy"></i> Copy`;
-                      }, 1500);
-                });
+            modal.classList.add('is-active');
+             const closeModalButton = modal.querySelector('.delete');
+        
+        closeModalButton.addEventListener('click', () => {
+                modal.classList.remove('is-active');
             });
-       };
-
-       const displayError = (message) => {
-              document.getElementById('err').innerHTML = message;
-       };
-
-        const shortenUrl = () => {
+        
+            const copyButton = document.getElementById('copyButton');
+            copyButton.addEventListener('click', () => {
+                navigator.clipboard.writeText(shortUrl)
+                     .then(() => {
+                         copyButton.innerHTML = `<span class="icon"><i class="fas fa-check"></i></span> <span>Copied!</span>`;
+                        setTimeout(() => {
+                             copyButton.innerHTML = `<span class="icon"><i class="fas fa-copy"></i></span> <span>Copy</span>`;
+                            }, 1500);
+                        })
+                    .catch(err => {
+                        console.error('Failed to copy: ', err);
+                         copyButton.innerHTML = `<span class="icon"><i class="fas fa-exclamation-triangle"></i></span> <span>Failed to copy</span>`;
+                         setTimeout(() => {
+                             copyButton.innerHTML = `<span class="icon"><i class="fas fa-copy"></i></span> <span>Copy</span>`;
+                           }, 1500);
+                    });
+            });
+        };
+        
+        
+              const displayError = (message) => {
+            document.getElementById('err').innerHTML = message;
+              };
+              const updateHistoryTable = () => {
+        const historyTableBody = document.querySelector('#historyTable tbody');
+        historyTableBody.innerHTML = "";
+        for (let i = 0; i < localStorage.length; i++){
+           const shortCode = localStorage.key(i);
+           const longUrl = localStorage.getItem(shortCode);
+         if(shortCode.startsWith('http')) continue;
+          const shortUrl = window.location.origin + window.location.pathname + "#" + shortCode;
+          const row = historyTableBody.insertRow();
+          const longUrlCell = row.insertCell();
+         const shortUrlCell = row.insertCell();
+           longUrlCell.innerHTML = `<a href="${longUrl}" target="_blank">${longUrl}</a>`;
+           shortUrlCell.innerHTML = `<a href="${shortUrl}" target="_blank">${shortUrl}</a>`;
+        }
+              };
+         const shortenUrl = async () => {
             const longUrl = getUrl();
             if (!longUrl) {
-                displayError("Please enter a valid URL.");
-               return;
-             }
-
+               displayError("Please enter a valid URL.");
+                 return;
+              }
               displayError("");
+             toggleLoading(true);
             const shortCode = generateShortCode();
-            localStorage.setItem(shortCode, longUrl);
+             localStorage.setItem(shortCode, longUrl);
             const shortUrl = window.location.origin + window.location.pathname + "#" + shortCode;
-           displayModal(shortUrl);
+            displayModal(shortUrl);
+            toggleLoading(false);
+             updateHistoryTable();
         };
-
+        
         const handleRedirect = () => {
-           const hash = window.location.hash.substring(1);
+             const hash = window.location.hash.substring(1);
              if (hash) {
                 const longUrl = localStorage.getItem(hash);
-                 if (longUrl) {
-                   window.location.replace(longUrl);
-                  } else {
-                    displayError("URL Not found.");
-                 }
+                  if (longUrl) {
+                       window.location.replace(longUrl);
+                    } else {
+                     displayError("URL Not found.");
+                     }
+              }
+         };
+        const clearHistory = () => {
+            for (let i = 0; i < localStorage.length; i++){
+               const shortCode = localStorage.key(i);
+                if(shortCode.startsWith('http')) continue;
+                localStorage.removeItem(shortCode);
+              i--;
+              }
+                updateHistoryTable();
             }
-        };
-
+        
+         const switchTab = (tabId) => {
+            const shortenSection = document.getElementById('shortenSection');
+              const historySection = document.getElementById('historySection');
+             const sh
+        
+        ortenTab = document.getElementById('shortenTab');
+              const historyTab = document.getElementById('historyTab');
+        
+             if (tabId === 'shortenTab') {
+                shortenSection.classList.remove('is-hidden');
+                historySection.classList.add('is-hidden');
+               shortenTab.classList.add('is-active');
+               historyTab.classList.remove('is-active');
+             } else {
+                  shortenSection.classList.add('is-hidden');
+                   historySection.classList.remove('is-hidden');
+                  shortenTab.classList.remove('is-active');
+                  historyTab.classList.add('is-active');
+            }
+        }
+        
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById("shortenButton").addEventListener("click", shortenUrl);
-            handleRedirect();
+            document.getElementById('clearHistory').addEventListener('click', clearHistory);
+            document.getElementById('shortenTab').addEventListener('click', () => switchTab('shortenTab'));
+            document.getElementById('historyTab').addEventListener('click', () => {
+                 switchTab('historyTab');
+                 updateHistoryTable();
+            });
+              handleRedirect();
          });
     </script>
 </body>
+
 </html>
